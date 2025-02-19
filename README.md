@@ -1,11 +1,11 @@
-# 📉 PricePulse – Real-Time Price Tracker  
+# 📉 Price-tracker – Real-Time Price Tracker  
 
 [![Laravel](https://img.shields.io/badge/Laravel-11.x-red)](https://laravel.com/)
 [![React](https://img.shields.io/badge/React-18.x-blue)](https://reactjs.org/)
 [![License](https://img.shields.io/github/license/Hanan467/Price-tracker)](LICENSE)
 
 ## 🚀 Overview  
-**PricePulse** is a real-time price tracking tool that monitors prices for electronics and notifies users when prices drop. Built with **Laravel** and **React**, it scrapes e-commerce sites and alerts users via notifications.  
+**Price-tracker** is a real-time price tracking tool that monitors prices for electronics and notifies users when prices drop. Built with **Laravel** and **React**, it scrapes e-commerce sites and alerts users via notifications.  
 
 ## ✨ Features  
 ✔ Track product prices from multiple stores  
