@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Notifications\PriceDropNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Panther\Client;
 
 class ScrapeController extends Controller
@@ -58,17 +60,28 @@ class ScrapeController extends Controller
         }
     }
 
-     public function checkPriceDrop(Product $product)
+     public static function checkPriceDrop()
      {
-         $client = Client::createChromeClient();
-         $crawler = $client->request('GET', $product->url);
- 
-         $currentPrice = $crawler->filter('.price')->text();
-         $currentPrice = floatval(preg_replace('/[^\d.]/', '', $currentPrice));
- 
-         if ($currentPrice < $product->price) {
-             $product->update(['price' => $currentPrice]);
-             // Notify the user (I’ll handle notifications later)
-         }
-     }
+        $products = Product::all();
+
+        $client = Client::createChromeClient();
+
+        foreach ($products as $product) {
+            try {
+                $crawler = $client->request('GET', $product->url);
+                $currentPrice = $crawler->filter('.price')->text();
+                $currentPrice = floatval(preg_replace('/[^\d.]/', '', $currentPrice));
+
+                if ($currentPrice < $product->price) {
+                    $product->update(['price' => $currentPrice]);
+
+                    $product->user->notify(new PriceDropNotification($product));
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to check price for {$product->url}: {$e->getMessage()}");
+            }
+        }
+
+        return response()->json(['message' => 'Price check completed']);
+    }
 }
