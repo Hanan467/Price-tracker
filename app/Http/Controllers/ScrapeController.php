@@ -4,11 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Panther\Client;
 
 class ScrapeController extends Controller
 {
-    public function handle()
+    public function showForm()
+    {
+        return view('track-product');
+    }
+
+    public function store(Request $request)
     {
         $client = Client::createChromeClient(null, null, [
             '--headless',
@@ -17,9 +23,12 @@ class ScrapeController extends Controller
             '--disable-dev-shm-usage',
             '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         ]);
-    
-        // Target URL
-        $url = 'https://www.alibaba.com/product-detail/Practical-Fashion-Waterproof-Cow-Leather-Handbag_1601011201470.html';
+
+        $request->validate([
+            'url' => 'required|url'
+        ]);
+
+        $url = $request->url;
     
         $crawler = $client->request('GET', $url);
     
@@ -31,16 +40,15 @@ class ScrapeController extends Controller
     
             $price = $crawler->filter('div.price')->text();
     
-            $product = Product::create([
+            Product::create([
+                'user_id' => Auth::id(),
                 'title' => $title,
-                'price' => $price,
+                'price' => floatval(preg_replace('/[^\d.]/', '', $price)), 
                 'url' => $url, 
             ]);
 
-            return response()->json([
-                'message' => 'Product scraped and saved successfully!',
-                'product' => $product,
-            ]);
+            return redirect()->back()->with('success', 'Product added successfully!');
+
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to scrape Alibaba: ' . $e->getMessage(),
@@ -49,4 +57,18 @@ class ScrapeController extends Controller
             $client->quit();
         }
     }
+
+     public function checkPriceDrop(Product $product)
+     {
+         $client = Client::createChromeClient();
+         $crawler = $client->request('GET', $product->url);
+ 
+         $currentPrice = $crawler->filter('.price')->text();
+         $currentPrice = floatval(preg_replace('/[^\d.]/', '', $currentPrice));
+ 
+         if ($currentPrice < $product->price) {
+             $product->update(['price' => $currentPrice]);
+             // Notify the user (I’ll handle notifications later)
+         }
+     }
 }
