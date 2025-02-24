@@ -13,7 +13,7 @@ class ScrapeController extends Controller
 {
     public function showForm()
     {
-        return view('track-product');
+        return view('addItem');
     }
 
     public function store(Request $request)
