@@ -16,7 +16,7 @@
 ## 🛠 Tech Stack  
 - **Backend:** Laravel 11, Goutte (for web scraping), Laravel Scheduler  
 - **Frontend:** React (with Axios for API calls)  
-- **Database:** PostgreSQL  
+- **Database:** MySql  
 - **Notifications:** WebSocket (Pusher)  
 
 ## 📦 Installation  
